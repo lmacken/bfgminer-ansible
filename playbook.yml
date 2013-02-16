@@ -1,0 +1,75 @@
+# An ansible playbook for bfgminer, a modular FPGA/GPU miner.
+#
+# Copyright (C) 2013 Luke Macken <lewk@csh.rit.edu>
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+---
+
+- name: Bootstrapping
+  hosts: all
+  sudo: yes
+
+  tasks:
+
+  - yum: pkg=$item state=latest
+    with_items:
+    - autoconf
+    - automake
+    - gcc
+    - libtool
+    - jansson-devel
+    - libcurl-devel
+
+  - user: name=bfgminer
+
+  - file: path=$item owner=bfgminer
+    with_fileglob: /dev/ttyUSB*
+
+  - command: /usr/bin/whoami
+    register: whoami
+    sudo: no
+
+  - shell: echo /usr/local/lib > /etc/ld.so.conf.d/local.conf
+
+
+- name: Building
+  hosts: all
+  sudo: no
+
+  tasks:
+
+  - git: repo=https://github.com/luke-jr/bfgminer dest=~/bfgminer
+
+  - command: /home/${whoami.stdout}/bfgminer/autogen.sh chdir=~/bfgminer
+
+  - command: /usr/bin/make chdir=~/bfgminer
+
+
+- name: Installing
+  hosts: all
+  sudo: yes
+
+  tasks:
+
+  - command: /usr/bin/make install chdir=~${whoami.stdout}/bfgminer
+
+  - command: /usr/sbin/ldconfig
+
+  - copy: src=bfgminer.conf dest=/etc/bfgminer.conf mode=0644
+
+  - file: dest=/usr/local/lib/systemd/system/ mode=0755 state=directory
+
+  - template: src=bfgminer.service dest=/usr/local/lib/systemd/system/bfgminer.service mode=0644
+
+  - service: name=bfgminer state=restarted

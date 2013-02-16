@@ -1,0 +1,11 @@
+[Unit]
+Description=FPGA/GPU miner
+
+[Service]
+ExecStart=/usr/local/bin/bfgminer --config /etc/bfgminer.conf
+User=bfgminer
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target
