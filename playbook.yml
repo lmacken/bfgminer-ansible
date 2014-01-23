@@ -22,7 +22,7 @@
 
   tasks:
 
-  - yum: pkg=$item state=latest
+  - yum: pkg={{ item }} state=latest
     with_items:
     - autoconf
     - automake
@@ -33,7 +33,7 @@
 
   - user: name=bfgminer
 
-  - file: path=$item owner=bfgminer
+  - file: path={{ item }} owner=bfgminer
     with_fileglob: /dev/ttyUSB*
 
   - command: /usr/bin/whoami
@@ -51,7 +51,9 @@
 
   - git: repo=https://github.com/luke-jr/bfgminer dest=~/bfgminer
 
-  - command: /home/${whoami.stdout}/bfgminer/autogen.sh chdir=~/bfgminer
+  - command: /home/{{ whoami.stdout }}/bfgminer/autogen.sh chdir=~/bfgminer
+
+  - command: /home/{{ whoami.stdout }}/bfgminer/configure chdir=~/bfgminer
 
   - command: /usr/bin/make chdir=~/bfgminer
 
@@ -62,7 +64,7 @@
 
   tasks:
 
-  - command: /usr/bin/make install chdir=~${whoami.stdout}/bfgminer
+  - command: /usr/bin/make install chdir=~{{whoami.stdout}}/bfgminer
 
   - command: /usr/sbin/ldconfig
 
