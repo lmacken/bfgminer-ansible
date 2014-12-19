@@ -30,6 +30,7 @@
     - libtool
     - jansson-devel
     - libcurl-devel
+    - uthash-devel
 
   - user: name=bfgminer
 
