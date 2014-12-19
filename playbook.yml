@@ -32,7 +32,7 @@
     - libcurl-devel
     - uthash-devel
 
-  - user: name=bfgminer
+  - user: name=bfgminer groups=dialout
 
   - file: path={{ item }} owner=bfgminer
     with_fileglob: /dev/ttyUSB*
